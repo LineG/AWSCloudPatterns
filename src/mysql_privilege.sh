@@ -1,0 +1,2 @@
+sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -e "CREATE USER 'myapp'@'%' IDENTIFIED BY 'testpwd';GRANT ALL PRIVILEGES ON * . * TO 'myapp'@'%' IDENTIFIED BY 'MyNewPass' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;"
+sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -e "USE mysql; UPDATE user SET plugin='mysql_native_password' WHERE User='root'; FLUSH PRIVILEGES;SET PASSWORD FOR 'root'@'localhost' = PASSWORD('MyNewPass');"

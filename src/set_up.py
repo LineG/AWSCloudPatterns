@@ -31,8 +31,8 @@ def create_sg(vpcID):
     vpcID : is the ID of the concerned VPC.
     Returns the security group ID.
     """
-    response = ec2_client.create_security_group(GroupName="LAB2",
-                                                Description='SG_basic',
+    response = ec2_client.create_security_group(GroupName="Final",
+                                                Description='tcp1186',
                                                 VpcId=vpcID)
     security_group_id = response['GroupId']
     ec2_client.authorize_security_group_ingress(
@@ -49,7 +49,12 @@ def create_sg(vpcID):
             {'IpProtocol': 'tcp',
              'FromPort': 443,
              'ToPort': 443,
+             'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+            {'IpProtocol': 'tcp',
+             'FromPort': 1186,
+             'ToPort': 1186,
              'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+
         ])
     return security_group_id
 
@@ -82,40 +87,52 @@ def wait_until_running_and_get_ip():
     This function waits for the EC2 instance to become available.
     returns the id and the ip the instance.
     """
-    while (True):
-        ec2 = boto3.resource('ec2')
+    dic = {}
+    ec2 = boto3.resource('ec2')
+
+    c = 0
+    while c < 5:
+        c = 0
         for instance in ec2.instances.all():
             if instance.state["Name"] == "running":
-                return instance.id, instance.public_ip_address
-        time.sleep(5)
+                c += 1
+
+    c = -1
+    for instance in ec2.instances.all():
+        if instance.state["Name"] == "running":
+            if instance.instance_type == "t2.micro":
+                c += 1
+                dic[f'cluster_{c}'] = {
+                    "id": instance.id,
+                    "ip": instance.public_ip_address,
+                    "dns": instance.private_dns_name,
+                    "ip-private": instance.private_ip_address}
+    return dic
 
 
 # Start
 
 print("\n############### SETTING UP THE SYSTEM ###############\n")
 
-print("Getting the vpc and the subnet IDs...")
-vpcID, subnet_id = get_vpc_id_and_subnet_id()
-print("IDs obtained!")
+# print("Getting the vpc and the subnet IDs...")
+# vpcID, subnet_id = get_vpc_id_and_subnet_id()
+# print("IDs obtained!")
 
-print("Creating the security group...")
-sg_id = create_sg(vpcID)
-print("Security group created!\n")
+# print("Creating the security group...")
+# sg_id = create_sg(vpcID)
+# print("Security group created!\n")
 
+sg_id = "sg-0c8e7c7e5acf08e01"
+subnet_id = "subnet-096bfb4fa35e61f2c"
 print("Creating the EC2 instance to install MySQL")
-create_ec2_instances(1, T2_MICRO, sg_id, subnet_id)
+create_ec2_instances(5, T2_MICRO, sg_id, subnet_id)
 print("EC2 instance created!\n")
 
 print("Waiting for the EC2 instance to get in the running state...")
-id, ip = wait_until_running_and_get_ip()
+dictionary = wait_until_running_and_get_ip()
 print("EC2 instance is running!")
 
-time.sleep(20)
-
-dictionary = {
-    "id": id,
-    "ip": ip
-}
+time.sleep(10)
 
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
