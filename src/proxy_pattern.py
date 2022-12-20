@@ -84,9 +84,9 @@ def get_fastest_ping():
 
 
 def ping_time_request():
+    fastest_ping = get_fastest_ping()
     print(
         f"We are hitting the the server with the fastest ping response: {fastest_ping}")
-    fastest_ping = get_fastest_ping()
     # Direct hit to master
     with SSHTunnelForwarder(
         (fastest_ping, 22),  # public ip of slave
