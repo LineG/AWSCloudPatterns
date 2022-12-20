@@ -4,6 +4,7 @@ import json
 
 AWS_REGION = 'us-east-1'
 T2_MICRO = "t2.micro"
+T2_LARGE = " t2.large"
 KEY_PAIR_NAME = "vockey"
 AMI_ID = "ami-08c40ec9ead489470"
 
@@ -82,7 +83,7 @@ def create_ec2_instances(nbr, type, sg_id, subnet_id):
     )
 
 
-def wait_until_running_and_get_ip():
+def wait_until_running_and_get_ip(instace_type):
     """
     This function waits for the EC2 instance to become available.
     returns the id and the ip the instance.
@@ -100,7 +101,7 @@ def wait_until_running_and_get_ip():
     c = -1
     for instance in ec2.instances.all():
         if instance.state["Name"] == "running":
-            if instance.instance_type == "t2.micro":
+            if instance.instance_type == instace_type:
                 c += 1
                 dic[f'cluster_{c}'] = {
                     "id": instance.id,
@@ -129,16 +130,21 @@ create_ec2_instances(5, T2_MICRO, sg_id, subnet_id)
 print("EC2 instance created!\n")
 
 print("Waiting for the EC2 instance to get in the running state...")
-dictionary = wait_until_running_and_get_ip()
+dictionary = wait_until_running_and_get_ip(T2_MICRO)
 print("EC2 instance is running!")
-
+create_ec2_instances(1, T2_LARGE, sg_id, subnet_id)
+dictionary_large = wait_until_running_and_get_ip(T2_LARGE)
 time.sleep(10)
 
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
+json_object = json.dumps(dictionary_large, indent=4)
 
 # Writing to collected_data.json
-with open("collected_data.json", "w") as outfile:
+with open("cluster_node_ids.json", "w") as outfile:
+    outfile.write(json_object)
+
+with open("proxy_ids.json", "w") as outfile:
     outfile.write(json_object)
 
 print("\n############### DONE SETTING UP THE SYSTEM ###############\n")

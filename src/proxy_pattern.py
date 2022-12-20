@@ -7,7 +7,7 @@ import time
 
 node_ids = []
 node_dns = []
-with open("collected_data.json", "r") as file:
+with open("cluster_node_ids.json", "r") as file:
     data = file.read()
     obj = json.loads(data)
     node_ids = [obj["cluster_1"].get("ip"), obj["cluster_2"].get("ip"),
@@ -19,6 +19,7 @@ with open("collected_data.json", "r") as file:
 def direct_hit_master():
     # No need for the ssh tunner just forward the read request to master
     print("****SSH Tunnel Established****")
+    print(f"We are makinf a sql request to master directrly {node_ids[0]}")
     connection = pymysql.connect(host=node_ids[0],  # public dns of master
                                  user="myapp",
                                  password='MyNewPass',
@@ -37,9 +38,11 @@ def direct_hit_master():
 
 
 def random_hit():
+
+    print("Hitting servers in the cluster at random")
     to_hit = random.randint(0, 3)
     # Direct hit to master
-    print(to_hit)
+    print(f"We are hitting {to_hit}")
     with SSHTunnelForwarder(
         (node_ids[to_hit], 22),  # public ip of slave
         ssh_username="ubuntu",
@@ -81,6 +84,8 @@ def get_fastest_ping():
 
 
 def ping_time_request():
+    print(
+        f"We are hitting the the server with the fastest ping response: {fastest_ping}")
     fastest_ping = get_fastest_ping()
     # Direct hit to master
     with SSHTunnelForwarder(
@@ -109,5 +114,6 @@ def ping_time_request():
             connection.commit()
 
 
-# random_hit()
+random_hit()
+direct_hit_master()
 ping_time_request()

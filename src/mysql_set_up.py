@@ -83,6 +83,10 @@ def benchmark_on_stand_alone(ip):
 
 
 def write_config_ini(ip_master, ip_slave1, ip_slave2, ip_slave3):
+    """
+    This function generates the config ini file of the master node
+    """
+
     config = """[ndb_mgmd]
 hostname="""+ip_master+"""
 datadir=/opt/mysqlcluster/deploy/ndb_data
@@ -113,6 +117,9 @@ nodeid=50
 
 
 def install_mysql_cluster_master(ssh_ip, ip_master, ip_slave1, ip_slave2, ip_slave3):
+    """
+    All the steps to install and download cluster on the master node
+    """
     master_steps1 = """
 #!/bin/bash
 sudo mkdir -p /opt/mysqlcluster/home
@@ -155,6 +162,12 @@ sudo /opt/mysqlcluster/home/mysqlc/bin/ndb_mgmd  -f /opt/mysqlcluster/deploy/con
 
 
 def install_mysql_slave_nodes(ip, master_ip):
+    """
+    Setting up the slave nodes of the cluster
+    ip: ip of the slave
+    master_ip: ip of the master
+    """
+
     slave_step1 = """
 #!/bin/bash
 sudo mkdir -p /opt/mysqlcluster/home
@@ -179,6 +192,9 @@ sudo ln -s mysql-cluster-gpl-7.2.1-linux2.6-x86_64 mysqlc
 
 
 def master_node_set_up_mysql(ip):
+    """
+    ip: ip of the master
+    """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 3)
@@ -198,7 +214,7 @@ def master_benchmark(ip):
     """
     This function performs the bechmarking of the master node
     Result: Save the output in the benchmark folder
-    id: the id of the node
+    ip: the ip of the node
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -222,7 +238,7 @@ def sakila_on_cluster(ip):
     """
     This function sets up the sakila database on the cluster 
     This is done through the master
-    id: the id of the node
+    ip: the ip of the node
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -249,7 +265,7 @@ def get_cluster_node_ids():
     This simply retrives the public ids and private dns
     return: node_ids(public) and node_dns(private)
     """
-    with open("collected_data.json", "r") as file:
+    with open("cluster_node_ids.json", "r") as file:
         data = file.read()
     obj = json.loads(data)
     node_ids = [obj["cluster_1"].get("ip"), obj["cluster_2"].get("ip"),
@@ -280,9 +296,11 @@ def install_cluster():
     master_node_set_up_mysql(node_ids[0])
 
 
-# install_cluster()
-# install_mysql_stand_alone('35.174.138.25')
-# benchmark_on_stand_alone('35.174.138.25')
-# sakila_on_cluster('52.207.239.98')
-# Manuellement rouler les privilèges dans le master node
-# master_benchmark('52.207.239.98')
+def run():
+    node_ids, node_dns = get_cluster_node_ids()
+    install_cluster()
+    # Manuellement rouler les privilèges dans le master node
+    install_mysql_stand_alone(node_ids[0])
+    benchmark_on_stand_alone(node_ids[0])
+    sakila_on_cluster(node_ids[1])
+    master_benchmark(node_ids[1])
