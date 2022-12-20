@@ -4,6 +4,7 @@ import json
 
 AWS_REGION = 'us-east-1'
 T2_MICRO = "t2.micro"
+T2_LARGE = "t2.large"
 KEY_PAIR_NAME = "vockey"
 AMI_ID = "ami-08c40ec9ead489470"
 
@@ -124,8 +125,12 @@ print("\n############### SETTING UP THE SYSTEM ###############\n")
 
 sg_id = "sg-0c8e7c7e5acf08e01"
 subnet_id = "subnet-096bfb4fa35e61f2c"
-print("Creating the EC2 instance to install MySQL")
+print("Creating the EC2 instance to install MySQL cluster")
 create_ec2_instances(5, T2_MICRO, sg_id, subnet_id)
+print("EC2 instance created!\n")
+
+print("Creating the EC2 instance to install MySQL cluster")
+create_ec2_instances(1, T2_LARGE, sg_id, subnet_id)
 print("EC2 instance created!\n")
 
 print("Waiting for the EC2 instance to get in the running state...")

@@ -235,10 +235,10 @@ def sakila_on_cluster(ip):
         "cd /tmp/ && sudo tar xvf sakila-db.tar.gz")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-schema.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass < /tmp/sakila-db/sakila-schema.sql")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-data.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass < /tmp/sakila-db/sakila-data.sql")
     print(stdout.read())
     ssh.close()
 
@@ -256,8 +256,8 @@ def get_cluster_node_ids():
                 obj["cluster_3"].get("ip"), obj["cluster_4"].get("ip")]
     node_dns = [obj["cluster_1"].get("dns"), obj["cluster_2"].get("dns"),
                 obj["cluster_3"].get("dns"), obj["cluster_4"].get("dns")]
-
-    return node_ids, node_dns
+    ip_stand_alone = ip_stand_alone
+    return node_ids, node_dns, ip_stand_alone
 
 
 def install_cluster():
@@ -265,7 +265,7 @@ def install_cluster():
     This function runs all the necessary functions to install
     the MySql Cluster
     """
-    node_ids, node_dns = get_cluster_node_ids()
+    node_ids, node_dns, _ = get_cluster_node_ids()
 
     print("Setting up master and the required config files")
     install_mysql_cluster_master(
@@ -280,9 +280,11 @@ def install_cluster():
     master_node_set_up_mysql(node_ids[0])
 
 
-# install_cluster()
-# install_mysql_stand_alone('35.174.138.25')
-# benchmark_on_stand_alone('35.174.138.25')
-# sakila_on_cluster('52.207.239.98')
-# Manuellement rouler les privilèges dans le master node
-# master_benchmark('52.207.239.98')
+def run():
+    node_ids, _, ip_stand_alone = get_cluster_node_ids()
+    install_cluster()
+    install_mysql_stand_alone(ip_stand_alone)
+    benchmark_on_stand_alone(ip_stand_alone)
+    # Manuellement rouler les privilèges dans le master node
+    # sakila_on_cluster(node_ids[0])
+    # master_benchmark(node_ids[0])
