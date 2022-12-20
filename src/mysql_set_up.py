@@ -39,7 +39,8 @@ def install_mysql_stand_alone(ip):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 0)
     print(f"Connected through SSH! {ip}")
-    _, stdout, _ = ssh.exec_command("sudo apt-get update")
+    _, stdout, _ = ssh.exec_command(
+        "sudo apt-get update")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command("sudo apt-get -y install mysql-server")
     print(stdout.read())
@@ -69,13 +70,13 @@ def benchmark_on_stand_alone(ip):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 0)
     _, stdout, _ = ssh.exec_command(
-        "sudo apt-get -y install sysbench")
+        "sudo apt -y upgrade && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000 --mysql-db=sakila --mysql-user=root prepare")
+        f"sudo sysbench oltp_read_write --table-size=1000 --db-driver=mysql=mysql --mysql-db=sakila --mysql-user=root prepare")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000  --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=root run")
+        f"sudo sysbench oltp_read_write --table-size=1000  --threads=6 --max-time=60 --db-driver=mysql --max-requests=0 --mysql-db=sakila --mysql-user=root run")
     file = open('benchmarking/benchmark_slave.txt', 'wb')
     file.write(stdout.read())
     file.close()
@@ -221,7 +222,7 @@ def master_benchmark(ip):
     ssh_connect_with_retry(ssh, ip, 3)
     print(f"Connected through SSH! {ip}")
     _, stdout, _ = ssh.exec_command(
-        "sudo apt-get -y install sysbench")
+        "sudo apt-get update && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
         f"sudo sysbench oltp_read_write --table-size=1000 --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
@@ -251,10 +252,10 @@ def sakila_on_cluster(ip):
         "cd /tmp/ && sudo tar xvf sakila-db.tar.gz")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-schema.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass< /tmp/sakila-db/sakila-schema.sql")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-data.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass < /tmp/sakila-db/sakila-data.sql")
     print(stdout.read())
     ssh.close()
 
@@ -298,9 +299,12 @@ def install_cluster():
 
 def run():
     node_ids, node_dns = get_cluster_node_ids()
-    install_cluster()
+    # install_cluster()
+    # install_mysql_stand_alone(node_ids[0])
+    # benchmark_on_stand_alone(node_ids[0])
     # Manuellement rouler les privilèges dans le master node
-    install_mysql_stand_alone(node_ids[0])
-    benchmark_on_stand_alone(node_ids[0])
     sakila_on_cluster(node_ids[1])
     master_benchmark(node_ids[1])
+
+
+run()
