@@ -39,7 +39,8 @@ def install_mysql_stand_alone(ip):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 0)
     print(f"Connected through SSH! {ip}")
-    _, stdout, _ = ssh.exec_command("sudo apt-get update")
+    _, stdout, _ = ssh.exec_command(
+        "sudo apt-get update")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command("sudo apt-get -y install mysql-server")
     print(stdout.read())
@@ -69,13 +70,13 @@ def benchmark_on_stand_alone(ip):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 0)
     _, stdout, _ = ssh.exec_command(
-        "sudo apt-get -y install sysbench")
+        "sudo apt -y upgrade && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000 --mysql-db=sakila --mysql-user=root prepare")
+        f"sudo sysbench oltp_read_write --table-size=10000 --db-driver=mysql --mysql-db=sakila --mysql-user=root prepare")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000  --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=root run")
+        f"sudo sysbench oltp_read_write --table-size=10000  --threads=6 --max-time=60 --db-driver=mysql --max-requests=0 --mysql-db=sakila --mysql-user=root run")
     file = open('benchmarking/benchmark_slave.txt', 'wb')
     file.write(stdout.read())
     file.close()
@@ -83,6 +84,10 @@ def benchmark_on_stand_alone(ip):
 
 
 def write_config_ini(ip_master, ip_slave1, ip_slave2, ip_slave3):
+    """
+    This function generates the config ini file of the master node
+    """
+
     config = """[ndb_mgmd]
 hostname="""+ip_master+"""
 datadir=/opt/mysqlcluster/deploy/ndb_data
@@ -113,6 +118,9 @@ nodeid=50
 
 
 def install_mysql_cluster_master(ssh_ip, ip_master, ip_slave1, ip_slave2, ip_slave3):
+    """
+    All the steps to install and download cluster on the master node
+    """
     master_steps1 = """
 #!/bin/bash
 sudo mkdir -p /opt/mysqlcluster/home
@@ -155,6 +163,12 @@ sudo /opt/mysqlcluster/home/mysqlc/bin/ndb_mgmd  -f /opt/mysqlcluster/deploy/con
 
 
 def install_mysql_slave_nodes(ip, master_ip):
+    """
+    Setting up the slave nodes of the cluster
+    ip: ip of the slave
+    master_ip: ip of the master
+    """
+
     slave_step1 = """
 #!/bin/bash
 sudo mkdir -p /opt/mysqlcluster/home
@@ -179,6 +193,9 @@ sudo ln -s mysql-cluster-gpl-7.2.1-linux2.6-x86_64 mysqlc
 
 
 def master_node_set_up_mysql(ip):
+    """
+    ip: ip of the master
+    """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 3)
@@ -198,20 +215,20 @@ def master_benchmark(ip):
     """
     This function performs the bechmarking of the master node
     Result: Save the output in the benchmark folder
-    id: the id of the node
+    ip: the ip of the node
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 3)
     print(f"Connected through SSH! {ip}")
     _, stdout, _ = ssh.exec_command(
-        "sudo apt-get -y install sysbench")
+        "sudo apt-get update && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000 --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
+        f"sudo sysbench oltp_read_write --table-size=10000 --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000   --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
+        f"sudo sysbench oltp_read_write --table-size=10000   --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
     file = open(f"benchmarking/benchmark_master_{ip}.txt", 'wb')
     file.write(stdout.read())
     file.close()
@@ -222,7 +239,7 @@ def sakila_on_cluster(ip):
     """
     This function sets up the sakila database on the cluster 
     This is done through the master
-    id: the id of the node
+    ip: the ip of the node
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -235,10 +252,10 @@ def sakila_on_cluster(ip):
         "cd /tmp/ && sudo tar xvf sakila-db.tar.gz")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-schema.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass < /tmp/sakila-db/sakila-schema.sql")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root < /tmp/sakila-db/sakila-data.sql")
+        "sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root --password=MyNewPass < /tmp/sakila-db/sakila-data.sql")
     print(stdout.read())
     ssh.close()
 
@@ -249,15 +266,15 @@ def get_cluster_node_ids():
     This simply retrives the public ids and private dns
     return: node_ids(public) and node_dns(private)
     """
-    with open("collected_data.json", "r") as file:
+    with open("cluster_node_ids.json", "r") as file:
         data = file.read()
     obj = json.loads(data)
     node_ids = [obj["cluster_1"].get("ip"), obj["cluster_2"].get("ip"),
                 obj["cluster_3"].get("ip"), obj["cluster_4"].get("ip")]
     node_dns = [obj["cluster_1"].get("dns"), obj["cluster_2"].get("dns"),
                 obj["cluster_3"].get("dns"), obj["cluster_4"].get("dns")]
-
-    return node_ids, node_dns
+    ip_stand_alone = obj["cluster_0"].get("ip")
+    return node_ids, node_dns, ip_stand_alone
 
 
 def install_cluster():
@@ -265,7 +282,7 @@ def install_cluster():
     This function runs all the necessary functions to install
     the MySql Cluster
     """
-    node_ids, node_dns = get_cluster_node_ids()
+    node_ids, node_dns, _ = get_cluster_node_ids()
 
     print("Setting up master and the required config files")
     install_mysql_cluster_master(
@@ -280,9 +297,14 @@ def install_cluster():
     master_node_set_up_mysql(node_ids[0])
 
 
-# install_cluster()
-# install_mysql_stand_alone('35.174.138.25')
-# benchmark_on_stand_alone('35.174.138.25')
-# sakila_on_cluster('52.207.239.98')
-# Manuellement rouler les privilèges dans le master node
-# master_benchmark('52.207.239.98')
+def run():
+    node_ids, _, ip_stand_alone = get_cluster_node_ids()
+    install_cluster()
+    install_mysql_stand_alone(ip_stand_alone)
+    benchmark_on_stand_alone(ip_stand_alone)
+
+    sakila_on_cluster(node_ids[0])
+    master_benchmark(node_ids[0])
+
+
+run()

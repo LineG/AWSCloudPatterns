@@ -1,0 +1,32 @@
+{
+    "cluster_0": {
+        "id": "i-006c017e79149b9b0",
+        "ip": "100.26.185.65",
+        "dns": "ip-172-31-90-127.ec2.internal",
+        "ip-private": "172.31.90.127"
+    },
+    "cluster_1": {
+        "id": "i-0b1bdac090d6cfc60",
+        "ip": "54.174.241.198",
+        "dns": "ip-172-31-84-222.ec2.internal",
+        "ip-private": "172.31.84.222"
+    },
+    "cluster_2": {
+        "id": "i-0e10523baea9c1a1a",
+        "ip": "18.208.133.163",
+        "dns": "ip-172-31-87-114.ec2.internal",
+        "ip-private": "172.31.87.114"
+    },
+    "cluster_3": {
+        "id": "i-02e2bc2f94c1a0c35",
+        "ip": "54.175.203.167",
+        "dns": "ip-172-31-92-149.ec2.internal",
+        "ip-private": "172.31.92.149"
+    },
+    "cluster_4": {
+        "id": "i-0cf32f97472d36631",
+        "ip": "18.205.149.208",
+        "dns": "ip-172-31-87-34.ec2.internal",
+        "ip-private": "172.31.87.34"
+    }
+}
