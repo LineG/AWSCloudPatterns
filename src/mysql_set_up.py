@@ -73,10 +73,10 @@ def benchmark_on_stand_alone(ip):
         "sudo apt -y upgrade && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000 --db-driver=mysql --mysql-db=sakila --mysql-user=root prepare")
+        f"sudo sysbench oltp_read_write --table-size=10000 --db-driver=mysql --mysql-db=sakila --mysql-user=root prepare")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000  --threads=6 --max-time=60 --db-driver=mysql --max-requests=0 --mysql-db=sakila --mysql-user=root run")
+        f"sudo sysbench oltp_read_write --table-size=10000  --threads=6 --max-time=60 --db-driver=mysql --max-requests=0 --mysql-db=sakila --mysql-user=root run")
     file = open('benchmarking/benchmark_slave.txt', 'wb')
     file.write(stdout.read())
     file.close()
@@ -225,10 +225,10 @@ def master_benchmark(ip):
         "sudo apt-get update && sudo apt-get -y install sysbench")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000 --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
+        f"sudo sysbench oltp_read_write --table-size=10000 --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
     print(stdout.read())
     _, stdout, _ = ssh.exec_command(
-        f"sudo sysbench oltp_read_write --table-size=1000   --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
+        f"sudo sysbench oltp_read_write --table-size=10000   --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
     file = open(f"benchmarking/benchmark_master_{ip}.txt", 'wb')
     file.write(stdout.read())
     file.close()
@@ -299,10 +299,10 @@ def install_cluster():
 
 def run():
     node_ids, _, ip_stand_alone = get_cluster_node_ids()
-    # install_cluster()
-    # install_mysql_stand_alone(ip_stand_alone)
-    # benchmark_on_stand_alone(ip_stand_alone)
-    # Manuellement rouler les privilèges dans le master node
+    install_cluster()
+    install_mysql_stand_alone(ip_stand_alone)
+    benchmark_on_stand_alone(ip_stand_alone)
+
     sakila_on_cluster(node_ids[0])
     master_benchmark(node_ids[0])
 
