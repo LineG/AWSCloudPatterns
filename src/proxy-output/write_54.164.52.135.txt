@@ -1,0 +1,4 @@
+This is a write request so we hit the master directly.
+****SSH Tunnel Established****
+We are makinf a sql request to master directrly 3.90.209.170
+None

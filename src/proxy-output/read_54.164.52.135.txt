@@ -1,0 +1,31 @@
+PING 3.90.209.170 (3.90.209.170) 56(84) bytes of data.
+
+--- 3.90.209.170 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1026ms
+
+PING 54.210.216.87 (54.210.216.87) 56(84) bytes of data.
+
+--- 54.210.216.87 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1006ms
+
+PING 54.224.75.156 (54.224.75.156) 56(84) bytes of data.
+
+--- 54.224.75.156 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1006ms
+
+PING 52.55.183.148 (52.55.183.148) 56(84) bytes of data.
+
+--- 52.55.183.148 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1006ms
+
+This is a read request so we can hit the slaves too.
+Hitting servers in the cluster at random
+We are hitting 3
+****SSH Tunnel Established****
+{'last_name': 'ASTAIRE'}
+****SSH Tunnel Established****
+We are makinf a sql request to master directrly 3.90.209.170
+('ASTAIRE',)
+We are hitting the the server with the fastest ping response: 3.90.209.170
+****SSH Tunnel Established****
+{'last_name': 'ASTAIRE'}

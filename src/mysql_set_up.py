@@ -309,6 +309,61 @@ def run():
     benchmark_on_stand_alone(ip_stand_alone)
     sakila_on_cluster(node_ids[0])
     master_benchmark(node_ids[0])
+    # ip, size, threads, time, requests, i
+    # time = [100, 10000, 10000, 30000, 100000]
+    # for t in time:
+    #     alone_benchmark_1(ip_stand_alone, 10000, 6, 0, t, f"time_{t}")
+    #     master_benchmark_2(node_ids[0], 10000, 6, 0, t, f"time_{t}")
+
+
+def alone_benchmark_1(ip, size, threads, time, requests, i):
+    """
+    This function benchmarks the slave nodes
+    ip : the ip of the instance/slave
+    """
+    # Setting Up SSH
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_connect_with_retry(ssh, ip, 0)
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench oltp_read_write --table-size={size} --db-driver=mysql --mysql-db=sakila --mysql-user=root prepare")
+    print(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench oltp_read_write --table-size={size}  --threads={threads} --max-time={time} --db-driver=mysql --max-requests={requests} --mysql-db=sakila --mysql-user=root run")
+    file = open(f'benchmarking/benchmark_alone_{i}.txt', 'wb')
+    file.write(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench  oltp_read_write --db-driver=mysql --mysql-user=root  --mysql-db=sakila cleanup")
+    print(stdout.read())
+    file.close()
+    ssh.close()
+
+
+def master_benchmark_2(ip, size, threads, time, requests, i):
+    """
+    This function performs the bechmarking of the master node
+    Result: Save the output in the benchmark folder
+    ip: the ip of the node
+    """
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_connect_with_retry(ssh, ip, 3)
+    print(f"Connected through SSH! {ip}")
+    _, stdout, _ = ssh.exec_command(
+        "sudo apt-get update && sudo apt-get -y install sysbench")
+    print(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench oltp_read_write --table-size={size} --mysql-db=sakila --mysql-user=myapp --mysql-password=MyNewPass --mysql-host={ip} prepare")
+    print(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench oltp_read_write --table-size={size}   --threads={threads} --max-time={time} --max-requests={requests} --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
+    file = open(f"benchmarking/benchmark_master_{i}.txt", 'wb')
+    file.write(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sysbench  oltp_read_write  --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass cleanup")
+    print(stdout.read())
+    file.close()
+    ssh.close()
 
 
 run()

@@ -127,8 +127,6 @@ print("Creating the security group...")
 sg_id = create_sg(vpcID)
 print("Security group created!\n")
 
-# sg_id = "sg-0c8e7c7e5acf08e01"
-# subnet_id = "subnet-096bfb4fa35e61f2c"
 print("Creating the EC2 instance to install MySQL")
 create_ec2_instances(5, T2_MICRO, sg_id, subnet_id)
 print("EC2 instance created!\n")
