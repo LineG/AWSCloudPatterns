@@ -54,6 +54,10 @@ def create_sg(vpcID):
             {'IpProtocol': 'tcp',
              'FromPort': 1186,
              'ToPort': 1186,
+             'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+            {'IpProtocol': 'tcp',
+             'FromPort': 3306,
+             'ToPort': 3306,
              'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
 
         ])
@@ -115,16 +119,16 @@ def wait_until_running_and_get_ip(instace_type, instance_number):
 
 print("\n############### SETTING UP THE SYSTEM ###############\n")
 
-# print("Getting the vpc and the subnet IDs...")
-# vpcID, subnet_id = get_vpc_id_and_subnet_id()
-# print("IDs obtained!")
+print("Getting the vpc and the subnet IDs...")
+vpcID, subnet_id = get_vpc_id_and_subnet_id()
+print("IDs obtained!")
 
-# print("Creating the security group...")
-# sg_id = create_sg(vpcID)
-# print("Security group created!\n")
+print("Creating the security group...")
+sg_id = create_sg(vpcID)
+print("Security group created!\n")
 
-sg_id = "sg-0c8e7c7e5acf08e01"
-subnet_id = "subnet-096bfb4fa35e61f2c"
+# sg_id = "sg-0c8e7c7e5acf08e01"
+# subnet_id = "subnet-096bfb4fa35e61f2c"
 print("Creating the EC2 instance to install MySQL")
 create_ec2_instances(5, T2_MICRO, sg_id, subnet_id)
 print("EC2 instance created!\n")

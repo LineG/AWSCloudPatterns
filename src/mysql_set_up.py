@@ -79,6 +79,9 @@ def benchmark_on_stand_alone(ip):
         f"sudo sysbench oltp_read_write --table-size=10000  --threads=6 --max-time=60 --db-driver=mysql --max-requests=0 --mysql-db=sakila --mysql-user=root run")
     file = open('benchmarking/benchmark_slave.txt', 'wb')
     file.write(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sudo sysbench  oltp_read_write --db-driver=mysql --mysql-user=root  --mysql-db=sakila cleanup")
+    print(stdout.read())
     file.close()
     ssh.close()
 
@@ -203,10 +206,7 @@ def master_node_set_up_mysql(ip):
     ssh.exec_command(
         "nohup sudo /opt/mysqlcluster/home/mysqlc/bin/mysqld --defaults-file=/opt/mysqlcluster/deploy/conf/my.cnf --user=root 1>/dev/null 2>/dev/null &")
     time.sleep(20)
-    _, stdout, _ = ssh.exec_command("sudo bash /tmp/mysql_privilege.sh")
-    print(stdout.read())
-    time.sleep(5)
-    _, stdout, _ = ssh.exec_command("sudo bash /tmp/mysql_privilege.sh")
+    _, stdout, _ = ssh.exec_command("bash /tmp/mysql_privilege.sh")
     print(stdout.read())
     ssh.close()
 
@@ -231,6 +231,9 @@ def master_benchmark(ip):
         f"sudo sysbench oltp_read_write --table-size=10000   --threads=6 --max-time=60 --max-requests=0 --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass run")
     file = open(f"benchmarking/benchmark_master_{ip}.txt", 'wb')
     file.write(stdout.read())
+    _, stdout, _ = ssh.exec_command(
+        f"sysbench  oltp_read_write  --mysql-db=sakila --mysql-user=myapp --mysql-host={ip} --mysql-password=MyNewPass cleanup")
+    print(stdout.read())
     file.close()
     ssh.close()
 
@@ -245,6 +248,8 @@ def sakila_on_cluster(ip):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip, 3)
     print(f"Connected through SSH! {ip}")
+    _, stdout, _ = ssh.exec_command("bash /tmp/mysql_privilege.sh")
+    print(stdout.read())
     _, stdout, _ = ssh.exec_command(
         "cd /tmp/ && wget https://downloads.mysql.com/docs/sakila-db.tar.gz")
     print(stdout.read())
@@ -302,7 +307,6 @@ def run():
     install_cluster()
     install_mysql_stand_alone(ip_stand_alone)
     benchmark_on_stand_alone(ip_stand_alone)
-
     sakila_on_cluster(node_ids[0])
     master_benchmark(node_ids[0])
 

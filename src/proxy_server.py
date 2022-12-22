@@ -79,11 +79,13 @@ def run_proxy():
     # read request ---> scroll to the right to check the parmeters 1. Query 2. Query type
     _, stdout, _ = ssh.exec_command(
         "sudo python3 proxy_pattern.py 'select last_name from actor group by last_name having count(*) = 1;' read")
-    print(stdout.read())
+    file = open(f"proxy-output/read_{ip}.txt", 'wb')
+    file.write(stdout.read())
     # write request
     _, stdout, _ = ssh.exec_command(
         "sudo python3 proxy_pattern.py 'insert into rental (rental_date, inventory_id, customer_id, staff_id) values (NOW(), 2, 2, 2);' write")
-    print(stdout.read())
+    file = open(f"proxy-output/write_{ip}.txt", 'wb')
+    file.write(stdout.read())
     ssh.close()
 
 

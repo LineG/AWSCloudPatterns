@@ -1,32 +1,32 @@
 {
     "cluster_0": {
-        "id": "i-006c017e79149b9b0",
-        "ip": "100.26.185.65",
-        "dns": "ip-172-31-90-127.ec2.internal",
-        "ip-private": "172.31.90.127"
+        "id": "i-025a2e052673ab670",
+        "ip": "54.225.27.86",
+        "dns": "ip-172-31-15-159.ec2.internal",
+        "ip-private": "172.31.15.159"
     },
     "cluster_1": {
-        "id": "i-0b1bdac090d6cfc60",
-        "ip": "54.174.241.198",
-        "dns": "ip-172-31-84-222.ec2.internal",
-        "ip-private": "172.31.84.222"
+        "id": "i-039d5814e4612bea3",
+        "ip": "107.22.81.75",
+        "dns": "ip-172-31-5-39.ec2.internal",
+        "ip-private": "172.31.5.39"
     },
     "cluster_2": {
-        "id": "i-0e10523baea9c1a1a",
-        "ip": "18.208.133.163",
-        "dns": "ip-172-31-87-114.ec2.internal",
-        "ip-private": "172.31.87.114"
+        "id": "i-056d4dd5e4c955b9d",
+        "ip": "75.101.215.97",
+        "dns": "ip-172-31-0-230.ec2.internal",
+        "ip-private": "172.31.0.230"
     },
     "cluster_3": {
-        "id": "i-02e2bc2f94c1a0c35",
-        "ip": "54.175.203.167",
-        "dns": "ip-172-31-92-149.ec2.internal",
-        "ip-private": "172.31.92.149"
+        "id": "i-06856166b4b596aaf",
+        "ip": "52.207.245.139",
+        "dns": "ip-172-31-6-157.ec2.internal",
+        "ip-private": "172.31.6.157"
     },
     "cluster_4": {
-        "id": "i-0cf32f97472d36631",
-        "ip": "18.205.149.208",
-        "dns": "ip-172-31-87-34.ec2.internal",
-        "ip-private": "172.31.87.34"
+        "id": "i-082e51c9872ba130c",
+        "ip": "52.91.141.72",
+        "dns": "ip-172-31-13-43.ec2.internal",
+        "ip-private": "172.31.13.43"
     }
 }
